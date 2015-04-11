@@ -34,7 +34,7 @@
  *  the demo and is responsible for the initial application hardware configuration.
  */
 
-#include "VirtualSerial.h"
+#include "ServoController.h"
 
 /** LUFA CDC Class driver interface configuration and state information. This structure is
  *  passed to all CDC Class driver functions, so that multiple instances of the same class
@@ -84,15 +84,26 @@ int main(void)
 
 	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
+	int mode = 0;
 
 	for (;;)
 	{
-		CheckJoystickMovement();
-		
 		/* Must throw away unused bytes from the host, or it will lock up while waiting for the device */
 		int c = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
 		if(c >= 0) {
-		  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, (uint8_t) c + 3);
+		  if(mode == 1) {
+		    OCR1A = 2000 + (c * 8);
+		    mode = 0;
+		  }
+		  else if(c >= 'a' && c <= 'z')
+		    CDC_Device_SendByte(&VirtualSerial_CDC_Interface, (uint8_t) 97+((c-97+3) %26));
+		  else if(c >= '0' && c <= '9') {
+		    int pos = c - '0';
+		    OCR1A = 2000 + pos * 200;
+		  }
+		  else if(c == 'X') {
+		    mode = 1;
+		  }
 		}
 		CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
 		USB_USBTask();
@@ -124,26 +135,28 @@ void SetupHardware(void)
 	/* Hardware Initialization */
 	LEDs_Init();
 	USB_Init();
-}
 
-/** Checks for changes in the position of the board joystick, sending strings to the host upon each change. */
-void CheckJoystickMovement(void)
-{
-	char*       ReportString  = NULL;
-	static bool ActionSent    = false;
+	// configure TIMER1 interrupt
+	DDRC |= (1 << DDC6); // PC6 is an output
 
-	ActionSent = false;
+	TCCR1A = 0;        // set entire TCCR1A register to 0
+	TCCR1B = 0;
+ 
 
-	if ((ReportString != NULL) && (ActionSent == false))
-	{
-		ActionSent = true;
+	// enable Timer1 overflow interrupt:
+	//TIMSK1 = (1 << TOIE1);
+	TCCR1A |= (1 << COM1A1); // Clear OC1A on match, set at TOP
+	TCCR1B |= (1 << CS11); // Timer1 clock = clk/8.
 
-		/* Write the string to the virtual COM port via the created character stream */
-		fputs(ReportString, &USBSerialStream);
+	// Now timer1 runs at 2MHz. We want to reset every 20ms, so we
+	// set ICR1 to 40000.
+	ICR1 = 40000;
 
-		/* Alternatively, without the stream: */
-		// CDC_Device_SendString(&VirtualSerial_CDC_Interface, ReportString);
-	}
+	// Fast PWM on timer1, TOP=ICR1, PWM mode
+	TCCR1A |= (1 << WGM11);
+	TCCR1B |= (1 << WGM13) | (1 << WGM12);
+	
+	OCR1A = 3000;  // Roughly 1.5ms. 2000=1ms. 4000=2ms.
 }
 
 /** Event handler for the library USB Connection event. */
