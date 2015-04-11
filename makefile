@@ -9,6 +9,9 @@
 #         LUFA Project Makefile.
 # --------------------------------------
 
+# Modified version of the VirtualSerial demo makefile
+# For AVR Minimus32 builds
+
 # Run "make help" for target help.
 
 MCU          = atmega32u2

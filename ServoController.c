@@ -6,6 +6,9 @@
            www.lufa-lib.org
 */
 
+/* Servo Controller application by Jim MacArthur 
+   Based on the VirtualSerial demo application from LUFA. */
+
 /*
   Copyright 2014  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
@@ -96,7 +99,7 @@ int main(void)
 		    mode = 0;
 		  }
 		  else if(c >= 'a' && c <= 'z')
-		    CDC_Device_SendByte(&VirtualSerial_CDC_Interface, (uint8_t) 97+((c-97+3) %26));
+		    CDC_Device_SendByte(&VirtualSerial_CDC_Interface, (uint8_t) 97 + ( (c-97+3) % 26 ) );
 		  else if(c >= '0' && c <= '9') {
 		    int pos = c - '0';
 		    OCR1A = 2000 + pos * 200;
