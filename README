@@ -1,6 +1,6 @@
 How to build the servo controller:
 
-1) Install pre-requisites: aptitude install avr-gcc avr-libc dfu-programmer
+1) Install pre-requisites: aptitude install gcc-avr avr-libc dfu-programmer
 2) Download and extract the LUFA zip somewhere.
 3) Install and configure dfu-programmer. You should be able to run 'dfu-programmer atmega32u2 erase' successfully.
 4) Alter 'makefile' and set LUFA_PATH to the LUFA directory inside the directory structure you just unpacked.
