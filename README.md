@@ -3,9 +3,11 @@ AVR Minimus servo controller
 
 ![Servo control](/minimus-servo.jpeg)
 
-## How to build the servo controller:
+This is a servo controller for the AVR Minimus. It can control up to three servos using commands taken over a virtual serial port. It is a modification of the VirtualSerial example in the LUFA project. LUFA can be found here: http://www.fourwalledcubicle.com/LUFA.php
 
-1. Install pre-requisites: aptitude install gcc-avr avr-libc dfu-programmer
+## How to build the servo controller on Ubuntu:
+
+1. Install pre-requisites: sudo apt-get install gcc-avr avr-libc dfu-programmer
 2. Download and extract the LUFA zip somewhere.
 3. Install and configure dfu-programmer. You should be able to run 'dfu-programmer atmega32u2 erase' successfully.
 4. Alter 'makefile' and set LUFA_PATH to the LUFA directory inside the directory structure you just unpacked.
