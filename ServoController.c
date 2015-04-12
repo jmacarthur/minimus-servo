@@ -6,7 +6,7 @@
            www.lufa-lib.org
 */
 
-/* Servo Controller application by Jim MacArthur 
+/* Servo Controller application by Jim MacArthur
    Based on the VirtualSerial demo application from LUFA. */
 
 /*
@@ -74,7 +74,6 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
  */
 static FILE USBSerialStream;
 
-
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
@@ -87,33 +86,29 @@ int main(void)
 
 	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
-	int mode = 0;
+	int channel = 0;
 
 	for (;;)
 	{
 		/* Must throw away unused bytes from the host, or it will lock up while waiting for the device */
 		int c = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
-		if(c >= 0) {
-		  if(mode > 0) {
-		    if(mode==1) { OCR1A = 2000 + (c * 8); }
-		    else if(mode==2) { OCR1B = 2000 + (c * 8); }
-		    else if(mode==3) { OCR1C = 2000 + (c * 8); }
-		    mode = 0;
-		  }
-		  else if(c >= 'a' && c <= 'z')
+		if (c >= 0) {
+		  if (channel > 0) {
+		    if (channel==1) { OCR1A = 2000 + (c * 8); }
+		    else if (channel==2) { OCR1B = 2000 + (c * 8); }
+		    else if (channel==3) { OCR1C = 2000 + (c * 8); }
+		    channel = 0;
+		  } else if (c >= 'a' && c <= 'z') {
 		    CDC_Device_SendByte(&VirtualSerial_CDC_Interface, (uint8_t) 97 + ( (c-97+3) % 26 ) );
-		  else if(c >= '0' && c <= '9') {
+		  } else if (c >= '0' && c <= '9') {
 		    int pos = c - '0';
 		    OCR1A = 2000 + pos * 200;
-		  }
-		  else if(c == 'X') {
-		    mode = 1;
-		  }
-		  else if(c == 'Y') {
-		    mode = 2;
-		  }
-		  else if(c == 'Z') {
-		    mode = 3;
+		  } else if (c == 'X') {
+		    channel = 1;
+		  } else if (c == 'Y') {
+		    channel = 2;
+		  } else if (c == 'Z') {
+		    channel = 3;
 		  }
 		}
 		CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
@@ -147,17 +142,19 @@ void SetupHardware(void)
 	LEDs_Init();
 	USB_Init();
 
-	// configure TIMER1 interrupt
+	// Configure the PWM pins as output
 	DDRC |= (1 << DDC6) | (1 << DDC5); // PC6,5 are outputs
 	DDRB |= (1 << DDB7); // PB7 is output
 
-	TCCR1A = 0;        // set entire TCCR1A register to 0
+	TCCR1A = 0; // reset entire TCCR1 register
 	TCCR1B = 0;
 
-	TCCR1A |= (1 << COM1A1) | (1<<COM1B1) | (1<<COM1C1); // Clear OC1* on match, set at TOP
+	// Clear OC1* on match, set at TOP
+	TCCR1A |= (1 << COM1A1) | (1<<COM1B1) | (1<<COM1C1);
+
 	TCCR1B |= (1 << CS11); // Timer1 clock = clk/8.
 
-	// Now timer1 runs at 2MHz. We want to reset every 20ms, so we
+	// Timer1 runs at 2MHz. We want to reset every 20ms, so we
 	// set ICR1 to 40000.
 	ICR1 = 40000;
 
@@ -166,8 +163,8 @@ void SetupHardware(void)
 	TCCR1B |= (1 << WGM13) | (1 << WGM12);
 
 	OCR1A = 3000;  // Roughly 1.5ms. 2000=1ms. 4000=2ms.
-	OCR1B = 3000;  // Roughly 1.5ms. 2000=1ms. 4000=2ms.
-	OCR1C = 3000;  // Roughly 1.5ms. 2000=1ms. 4000=2ms.
+	OCR1B = 3000;
+	OCR1C = 3000;
 }
 
 /** Event handler for the library USB Connection event. */
