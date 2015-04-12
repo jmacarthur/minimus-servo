@@ -94,8 +94,10 @@ int main(void)
 		/* Must throw away unused bytes from the host, or it will lock up while waiting for the device */
 		int c = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
 		if(c >= 0) {
-		  if(mode == 1) {
-		    OCR1A = 2000 + (c * 8);
+		  if(mode > 0) {
+		    if(mode==1) { OCR1A = 2000 + (c * 8); }
+		    else if(mode==2) { OCR1B = 2000 + (c * 8); }
+		    else if(mode==3) { OCR1C = 2000 + (c * 8); }
 		    mode = 0;
 		  }
 		  else if(c >= 'a' && c <= 'z')
@@ -106,6 +108,12 @@ int main(void)
 		  }
 		  else if(c == 'X') {
 		    mode = 1;
+		  }
+		  else if(c == 'Y') {
+		    mode = 2;
+		  }
+		  else if(c == 'Z') {
+		    mode = 3;
 		  }
 		}
 		CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
@@ -140,15 +148,13 @@ void SetupHardware(void)
 	USB_Init();
 
 	// configure TIMER1 interrupt
-	DDRC |= (1 << DDC6); // PC6 is an output
+	DDRC |= (1 << DDC6) | (1 << DDC5); // PC6,5 are outputs
+	DDRB |= (1 << DDB7); // PB7 is output
 
 	TCCR1A = 0;        // set entire TCCR1A register to 0
 	TCCR1B = 0;
- 
 
-	// enable Timer1 overflow interrupt:
-	//TIMSK1 = (1 << TOIE1);
-	TCCR1A |= (1 << COM1A1); // Clear OC1A on match, set at TOP
+	TCCR1A |= (1 << COM1A1) | (1<<COM1B1) | (1<<COM1C1); // Clear OC1* on match, set at TOP
 	TCCR1B |= (1 << CS11); // Timer1 clock = clk/8.
 
 	// Now timer1 runs at 2MHz. We want to reset every 20ms, so we
@@ -158,8 +164,10 @@ void SetupHardware(void)
 	// Fast PWM on timer1, TOP=ICR1, PWM mode
 	TCCR1A |= (1 << WGM11);
 	TCCR1B |= (1 << WGM13) | (1 << WGM12);
-	
+
 	OCR1A = 3000;  // Roughly 1.5ms. 2000=1ms. 4000=2ms.
+	OCR1B = 3000;  // Roughly 1.5ms. 2000=1ms. 4000=2ms.
+	OCR1C = 3000;  // Roughly 1.5ms. 2000=1ms. 4000=2ms.
 }
 
 /** Event handler for the library USB Connection event. */
