@@ -13,7 +13,7 @@ Prebuilt binaries for the Minimus 32 are available in the releases section.
 2. Download and extract the LUFA zip somewhere.
 3. Install and configure dfu-programmer. You should be able to run 'dfu-programmer atmega32u2 erase' successfully.
 4. Alter 'makefile' and set LUFA_PATH to the LUFA directory inside the directory structure you just unpacked.
-5. If necessary, change MCU to at90usb162. (I haven't tested it on this chip.)
+5. If you have an original Minimus, rather than the Minimus32, change MCU to at90usb162. (I haven't tested it on this chip.)
 6. Run 'make hex'.
 7. If this succeeded, you should have a "ServoController.hex" file.
 8. Put the minimus into bootloader mode (press 'reset' while holding down HWB1).
