@@ -5,6 +5,8 @@ AVR Minimus servo controller
 
 This is a servo controller for the AVR Minimus. It can control up to three servos using commands taken over a virtual serial port. It is a modification of the VirtualSerial example in the LUFA project. LUFA can be found here: http://www.fourwalledcubicle.com/LUFA.php
 
+Prebuilt binaries for the Minimus 32 are available in the releases section.
+
 ## How to build the servo controller on Ubuntu:
 
 1. Install pre-requisites: sudo apt-get install gcc-avr avr-libc dfu-programmer
@@ -19,7 +21,7 @@ This is a servo controller for the AVR Minimus. It can control up to three servo
 
 ## How to use the controller
 
-You should now have a device called /dev/ttyACM0. Run 'screen /dev/ttyACM0 115200' (you may need sudo), or run your favoure terminal emulator.
+You should now have a device called /dev/ttyACM0. Run 'screen /dev/ttyACM0 115200' (you may need sudo), or run your favourite terminal emulator.
 
 Typing the numbers 0-9 on the serial console should roughly set the servo position. This is only meant for testing and will only affect pin PC6.
 
